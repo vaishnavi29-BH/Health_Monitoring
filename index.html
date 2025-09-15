@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Patient Health Dashboard</title>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+  <script>
+    if (localStorage.getItem('isLoggedIn') !== 'true') {
+      window.location.href = 'login.html'; // Redirect to login if not logged in
+    }
+  </script>
+
+  <style>
+    /* General body and font */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #3a9bdc, #35c2b6);
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      color: #f4f7f9;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Header styling */
+    header {
+      background-color: rgba(0, 58, 107, 0.9);
+      color: #e0f7fa;
+      padding: 18px 0;
+      font-size: 24px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+
+    header img {
+      width: 55px;
+      height: 55px;
+      filter: drop-shadow(0 0 4px #00bcd4);
+    }
+
+    /* Chart container */
+    .chart-container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 35px auto;
+      background: #ffffffdd;
+      padding: 28px 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      color: #222;
+      user-select: none;
+    }
+
+    /* Loader */
+    .loader {
+      border: 10px solid #e0f2f1;
+      border-top: 10px solid #009688;
+      border-radius: 50%;
+      width: 70px;
+      height: 70px;
+      animation: spin 1.2s linear infinite;
+      margin: 60px auto;
+      box-shadow: 0 0 15px #009688aa;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Timestamp */
+    .timestamp {
+      margin-top: 15px;
+      font-size: 17px;
+      font-weight: 600;
+      color: #004d40;
+      user-select: none;
+    }
+
+    /* Alert messages */
+    .alert {
+      margin-top: 22px;
+      font-weight: 700;
+      font-size: 19px;
+      color: #d32f2f; /* deep red */
+      text-shadow: 0 0 6px #ff6f60;
+      user-select: none;
+    }
+
+    /* AI suggestions */
+    .ai-suggestion {
+      background-color: #e0f2f1;
+      color: #00796b;
+      padding: 14px 18px;
+      margin: 20px auto;
+      border-radius: 12px;
+      max-width: 600px;
+      font-weight: 700;
+      font-size: 18px;
+      box-shadow: 0 0 12px #00796b77;
+      user-select: none;
+    }
+
+    /* Logout button */
+    button.logout-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: #00796b;
+      border: none;
+      padding: 12px 18px;
+      color: white;
+      font-weight: 700;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 3px 8px #004d40bb;
+      transition: background-color 0.3s ease;
+      user-select: none;
+      z-index: 999;
+    }
+    button.logout-btn:hover {
+      background-color: #004d40;
+    }
+
+    /* Footer */
+    footer {
+      background-color: rgba(0, 58, 107, 0.9);
+      color: #a7c7c7;
+      padding: 14px 0;
+      font-size: 15px;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://cdn.vectorstock.com/i/1000v/36/61/doctor-icon-medical-symbol-vector-15613661.jpg" alt="Medical Symbol" />
+    IOT Based Assistive Healthcare for Severely Disabled Patients
+  </header>
+
+  <div id="loader" class="loader"></div>
+
+  <div class="chart-container" id="chart_div" style="display:none;"></div>
+  <div class="timestamp" id="timestamp"></div>
+  <div class="alert" id="alert_div"></div>
+  <div class="ai-suggestion" id="ai_div"></div>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+  <footer>
+    Guided by: Prof. D. R. Joshi | Submitted by: Miss. Vaishnavi. M. Bhangale, Dhiresh. Sanap, Radha. D. Jadhao, Deep. A. Barhate
+  </footer>
+
+  <script>
+    google.charts.load('current', { 'packages': ['corechart'] });
+    google.charts.setOnLoadCallback(drawChart);
+
+    async function drawChart() {
+      const SHEET_ID = "1zvBmANNe46Ar5Z4xVZwwcb51WrJ-z-qQ9pDMrLAv33E"; // Replace with your actual Sheet ID
+      const QUERY = encodeURIComponent("SELECT A, B, C, D, E, F"); // A: Time, B: Temp, C: BPM, D: SpO2, E: Button, F: EyeBlink
+      const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=Sheet1&tq=${QUERY}`;
+
+      try {
+        const loader = document.getElementById("loader");
+        const chartDiv = document.getElementById("chart_div");
+        const alertDiv = document.getElementById("alert_div");
+        const aiDiv = document.getElementById("ai_div");
+        const timestampDiv = document.getElementById("timestamp");
+
+        loader.style.display = "block";
+        chartDiv.style.display = "none";
+        alertDiv.innerHTML = "";
+        aiDiv.innerHTML = "";
+        timestampDiv.innerHTML = "";
+
+        const response = await fetch(URL);
+        const text = await response.text();
+        const jsonData = JSON.parse(text.substring(47).slice(0, -2));
+
+        const dataArray = [["Time", "Temp", "BPM", "SpO2"]];
+        let lastRow = null;
+
+        if (jsonData.table.rows.length === 0) {
+          loader.style.display = "none";
+          alertDiv.innerHTML = "No data available yet!";
+          return;
+        }
+
+        jsonData.table.rows.forEach(row => {
+          const time = row.c[0]?.v;
+          const temp = row.c[1]?.v;
+          const bpm = row.c[2]?.v;
+          const spo2 = row.c[3]?.v;
+          const button = row.c[4]?.v;
+          const eyeblink = row.c[5]?.v;
+
+          if (time && temp && bpm && spo2) {
+            dataArray.push([new Date(time), temp, bpm, spo2]);
+            lastRow = { time, temp, bpm, spo2, button, eyeblink };
+          }
+        });
+
+        if (!lastRow) {
+          loader.style.display = "none";
+          alertDiv.innerHTML = "Waiting for complete parameter data...";
+          return;
+        }
+
+        // Draw chart
+        const data = google.visualization.arrayToDataTable(dataArray);
+        const options = {
+          title: 'Patient Vitals Over Time',
+          curveType: 'function',
+          legend: { position: 'bottom' },
+          height: 420,
+          colors: ['#d32f2f', '#0288d1', '#388e3c']
+        };
+
+        const chart = new google.visualization.LineChart(chartDiv);
+        chart.draw(data, options);
+
+        loader.style.display = "none";
+        chartDiv.style.display = "block";
+
+        // Time display
+        timestampDiv.innerHTML = `📅 Last Record: ${new Date(lastRow.time).toLocaleString()}`;
+
+        // Alerts & AI suggestions
+        let alertMsg = "";
+        let aiMsg = "";
+
+        if (lastRow.temp > 38) {
+          alertMsg += "⚠ High Temperature! ";
+          aiMsg += "Take Paracetamol. ";
+        }
+        if (lastRow.bpm > 120) {
+          alertMsg += "⚠ High BPM! ";
+          aiMsg += "Take Beta Blocker. ";
+        }
+        if (lastRow.spo2 < 90) {
+          alertMsg += "⚠ Low SpO2! ";
+          aiMsg += "Provide Oxygen. ";
+        }
+        if (lastRow.eyeblink == 1) {
+          alertMsg += "⚠ Eye Blink Detected! ";
+          aiMsg += "Patient requesting attention. ";
+        }
+        if (lastRow.button == 1) {
+          alertMsg += "⚠ Emergency Button Pressed! ";
+        }
+
+        alertDiv.innerHTML = alertMsg;
+        aiDiv.innerHTML = aiMsg;
+
+        // Refresh every 10 seconds
+        setTimeout(drawChart, 10000);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("alert_div").innerHTML = "Error fetching data from Google Sheet!";
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('isLoggedIn');
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

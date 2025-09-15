@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Patient Dashboard</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #009688, #004d40);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 40px 40px 50px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      width: 360px;
+      text-align: center;
+      backdrop-filter: blur(12px);
+      position: relative;
+    }
+
+    .logo {
+      margin-bottom: 30px;
+    }
+
+    .logo img {
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+      filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+    }
+
+    h2 {
+      margin-bottom: 28px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      font-size: 26px;
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.4);
+    }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      padding: 14px 18px;
+      margin: 14px 0;
+      border-radius: 10px;
+      border: none;
+      font-size: 17px;
+      outline: none;
+      box-shadow: inset 0 0 10px rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.2);
+      color: #fff;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    input[type="text"]::placeholder,
+    input[type="password"]::placeholder {
+      color: #cce8e1;
+      font-style: italic;
+    }
+
+    input[type="text"]:focus,
+    input[type="password"]:focus {
+      background: rgba(255,255,255,0.35);
+      box-shadow: 0 0 12px 3px #00796b;
+      color: #004d40;
+      font-weight: 600;
+    }
+
+    button {
+      width: 100%;
+      padding: 16px 0;
+      margin-top: 20px;
+      background: #00796b;
+      border: none;
+      border-radius: 12px;
+      color: #e0f2f1;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 14px rgba(0,121,107,0.6);
+      user-select: none;
+    }
+
+    button:hover {
+      background: #004d40;
+      box-shadow: 0 6px 18px rgba(0,77,64,0.9);
+    }
+
+    .error-msg {
+      margin-top: 18px;
+      min-height: 26px;
+      color: #ff5252;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      user-select: none;
+      text-shadow: 0 0 2px rgba(255,82,82,0.7);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 400px) {
+      .login-container {
+        width: 90%;
+        padding: 30px 25px 40px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      button {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container" role="main" aria-label="Login form">
+    <div class="logo" aria-hidden="true">
+      <!-- Doctor Logo (Open source SVG or PNG) -->
+      <img src="./images.png" alt="Doctor Icon" />
+    </div>
+
+    <h2>Patient Dashboard Login</h2>
+
+    <input id="username" type="text" placeholder="Username" autocomplete="off" aria-label="Username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="off" aria-label="Password" />
+    <div class="error-msg" id="error-msg" aria-live="polite"></div>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <script>
+    function login() {
+      const user = document.getElementById('username').value.trim();
+      const pass = document.getElementById('password').value.trim();
+      const errorMsg = document.getElementById('error-msg');
+
+      const validUser = 'Vaishnavi@2909';
+      const validPass = 'vaishu@29';
+
+      if (user === validUser && pass === validPass) {
+        localStorage.setItem('isLoggedIn', 'true');
+        window.location.href = 'index.html';
+      } else {
+        errorMsg.textContent = 'Invalid username or password';
+      }
+    }
+
+    if (localStorage.getItem('isLoggedIn') === 'true') {
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
